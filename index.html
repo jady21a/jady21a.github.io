@@ -11,27 +11,33 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
     <!-- 主容器，居中并设置内边距 -->
-    <div class="flex flex-col h-screen max-w-xl mx-auto p-2 md:p-4 lg:p-4">
-
+    <div class="flex flex-col h-screen max-w-xl mx-auto p-1 md:p-1 lg:p-3">
         <!-- 动作图片和标题区域 -->
-        <div class="flex-grow flex flex-col justify-center items-center text-center p-2">
+        <div class="flex flex-col justify-center items-center text-center p-1">
             <div class="bg-white rounded-1xl shadow-lg p-1 w-full max-w-md flex justify-center">
                 <img id="exercise-image" src="" alt="运动图片" class="max-w-full max-h-[550px] object-contain">
               </div>
             <h2 id="exercise-name" class="mt-2 text-1xl md:text-2xl font-bold text-slate-900 transition-opacity duration-300"></h2>
             <!-- 动作详情（次数或时长） -->
-            <p id="exercise-details" class="mt-1 text-xl md:text-1xl text-slate-600 transition-opacity duration-300"></p>
-            <!-- 仅为按次动作显示 -->
-            <p id="rep-counter" class="hidden mt-1 text-lg md:text-xl text-slate-500 font-semibold"></p>
+            <!-- 下一个动作 -->
+            <div class="mt-1 flex items-center justify-center space-x-4">
+       
+                <p id="next-exercise" class="text-base md:text-lg text-slate-500 font-semibold">下一个: —</p>
+            </div>
+            <div class="mt-0 flex items-center justify-center space-x-7">
+                <p id="exercise-details"  class="text-xl md:text-1xl text-slate-600 transition-opacity duration-300"></p>        
+                <p id="rep-counter" class="hidden mt-1 text-lg md:text-xl text-slate-500 font-semibold"></p>
+              
+            </div>
         </div>
 
         <!-- 当前动作计时器，居中放大显示 -->
         <div class="flex-none flex items-center justify-center p-1">
-            <span id="current-timer" class="text-2xl md:text-7xl font-extrabold text-blue-500 timer-font">00:00</span>
+            <span id="current-timer" class="text-6xl md:text-6xl font-extrabold text-blue-500 timer-font">00:00</span>
         </div>
 
         <!-- 底部控制栏 -->
-        <div class="flex-none flex items-center justify-between p-4 bg-white rounded-2xl shadow-lg border border-slate-100">
+        <div class="flex-none flex items-center justify-between p-3 bg-white rounded-1xl shadow-lg border border-slate-100">
             <!-- 剩余时长 -->
             <div class="flex flex-col items-center">
                 <span class="text-xs md:text-sm text-slate-500 font-semibold">剩余时长</span>
@@ -63,6 +69,7 @@
                 <span class="text-xs md:text-sm text-slate-500 font-semibold">动作进度</span>
                 <span id="exercise-progress" class="mt-1 text-base md:text-xl font-bold text-slate-700 timer-font">1 / 40</span>
             </div>
+
         </div>
     </div>
 
@@ -127,6 +134,8 @@
         const nextBtn = document.getElementById('next-btn');
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
+        const nextExerciseEl = document.getElementById('next-exercise');
+
 
         // 状态变量
         let currentExerciseIndex = 0;
@@ -171,7 +180,7 @@ function formatTime(sec){
         function updateUI(){
     const ex = exercises[currentExerciseIndex];
     exerciseName.textContent = ex.name;
-    exerciseImage.src = `./core/img/${ex.imageName}`;
+    exerciseImage.src = `img/${ex.imageName}`;
     
     if(ex.type==='reps'){
         exerciseDetails.textContent = `${ex.reps}次`;
@@ -186,6 +195,14 @@ function formatTime(sec){
     remainingTimeEl.textContent = formatTime(remainingDurationSeconds);
     totalTimeEl.textContent = formatTime(totalDurationSeconds);
     exerciseProgressEl.textContent = `${currentExerciseIndex+1} / ${exercises.length}`;
+    // 更新下一个动作预告
+if (currentExerciseIndex + 1 < exercises.length) {
+    const nextEx = exercises[currentExerciseIndex + 1];
+    nextExerciseEl.textContent =  `下一个: ${nextEx.name}`;
+} else {
+    nextExerciseEl.textContent = "下一个：完成!";
+}
+
 }
 
         // 启动/恢复计时器
