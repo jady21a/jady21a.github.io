@@ -176,12 +176,18 @@ function formatTime(sec){
 }
 
 
-        // 更新UI
-        function updateUI(){
+// 预加载图片函数
+function preloadImage(url) {
+    const img = new Image();
+    img.src = url;
+}
+
+// 更新UI
+function updateUI(){
     const ex = exercises[currentExerciseIndex];
     exerciseName.textContent = ex.name;
-    exerciseImage.src = `./core/img/${ex.imageName}`;
-    
+    exerciseImage.src = `img/${ex.imageName}`;
+
     if(ex.type==='reps'){
         exerciseDetails.textContent = `${ex.reps}次`;
         repCounterEl.textContent = `已完成: ${completedReps} / 剩余: ${ex.reps-completedReps}`;
@@ -195,15 +201,14 @@ function formatTime(sec){
     remainingTimeEl.textContent = formatTime(remainingDurationSeconds);
     totalTimeEl.textContent = formatTime(totalDurationSeconds);
     exerciseProgressEl.textContent = `${currentExerciseIndex+1} / ${exercises.length}`;
-    // 更新下一个动作预告
-if (currentExerciseIndex + 1 < exercises.length) {
-    const nextEx = exercises[currentExerciseIndex + 1];
-    nextExerciseEl.textContent =  `下一个: ${nextEx.name}`;
-} else {
-    nextExerciseEl.textContent = "下一个：完成!";
+
+    // ---- 预加载下一张图片 ----
+    if(currentExerciseIndex + 1 < exercises.length){
+        const nextEx = exercises[currentExerciseIndex + 1];
+        preloadImage(`img/${nextEx.imageName}`);
+    }
 }
 
-}
 
         // 启动/恢复计时器
         function startTimer(){
