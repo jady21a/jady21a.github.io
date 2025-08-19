@@ -187,7 +187,7 @@ function preloadImage(url) {
 function updateUI(){
     const ex = exercises[currentExerciseIndex];
     exerciseName.textContent = ex.name;
-    exerciseImage.src = `img/${ex.imageName}`;
+    exerciseImage.src = `./core/img/${ex.imageName}`;
 
     if(ex.type==='reps'){
         exerciseDetails.textContent = `${ex.reps}次`;
