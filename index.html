@@ -101,15 +101,23 @@
             font-style: italic;
         }
 
-        .motto {
-            font-size: 3em;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 20px;
-            position: relative;
-            display: inline-block;
-            overflow: hidden;
-        }
+.motto {
+  font-size: 2.8em;
+  font-weight: bold;
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+
+  /* 渐变文字 */
+  background: linear-gradient(90deg, #1d829c, #9b4ae2, #4ddcff);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
 
         .motto::after {
             content: '';
@@ -162,7 +170,7 @@
     <div class="container">
         <div class="motto">健康是最基本的投资</div>
         <h1>运动计时器</h1>
-        <p class="subtitle">现在就开始吧</p>
+        <p class="subtitle">现在就开始吧!</p>
         <div class="buttons">
             <a href="./core/core.html" class="button">Core 训练</a>
             <a href="./mid/mid.html" class="button">Mid 训练</a>
