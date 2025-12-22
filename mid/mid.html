@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mid 训练计时器</title>
+<style>
+  * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+  }
+
+  body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f5f5, #e3f2fd);
+      min-height: 100vh;
+      padding: 20px;
+  }
+
+  .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      padding: 24px;
+  }
+
+  h1 {
+      text-align: center;
+      color: #333;
+      font-size: 1.5em;
+      margin-bottom: 20px;
+  }
+
+  #exercise {
+      font-size: 1.5em;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 16px;
+      text-align: center;
+  }
+
+  #exercise-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+      margin: 0 auto 16px;
+      display: block;
+  }
+
+  #timer {
+      font-size: 3em;
+      font-weight: 700;
+      color: #007BFF;
+      text-align: center;
+      margin: 16px 0;
+  }
+
+  #next-hint {
+      font-size: 0.9em;
+      color: #666;
+      text-align: center;
+      margin-bottom: 16px;
+  }
+
+  .time-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+  }
+
+  .time-info > div {
+      background: #f8f9fa;
+      padding: 12px;
+      border-radius: 8px;
+  }
+
+  .time-info .label {
+      font-size: 0.85em;
+      color: #666;
+      margin-bottom: 4px;
+  }
+
+  .time-info .value {
+      font-size: 1.2em;
+      font-weight: 700;
+      color: #333;
+  }
+
+  .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+  }
+
+  .controls button, .controls a {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+  }
+
+  #start {
+      background: #007BFF;
+      color: white;
+      padding: 14px 32px;
+      font-size: 1.2em;
+  }
+
+  #start:hover {
+      background: #0056b3;
+  }
+
+  #start.paused {
+      background: #dc3545;
+  }
+
+  #prev, #next {
+      background: #6c757d;
+      color: white;
+  }
+
+  #prev:hover, #next:hover {
+      background: #5a6268;
+  }
+
+  .controls a {
+      background: #f8f9fa;
+      color: #333;
+  }
+
+  .controls a:hover {
+      background: #e9ecef;
+  }
+
+  @media (max-width: 640px) {
+      .container {
+          padding: 16px;
+      }
+
+      h1 {
+          font-size: 1.3em;
+      }
+
+      #exercise {
+          font-size: 1.2em;
+      }
+
+      #timer {
+          font-size: 2.5em;
+      }
+
+      .controls button, .controls a {
+          font-size: 0.9em;
+          padding: 10px 16px;
+      }
+
+      #start {
+          font-size: 1.1em;
+          padding: 12px 24px;
+      }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- <h1>Core 训练</h1> -->
+  
+  <div id="exercise">点击开始按钮</div>
+  <img id="exercise-image" src="./img/0rest.png" alt="训练图片">
+  <div id="timer">准备就绪</div>
+  <div id="next-hint"></div>
+
+  <div class="time-info">
+      <div>
+          <div class="label">剩余时间</div>
+          <div class="value" id="remaining-time">--</div>
+      </div>
+      <div>
+          <div class="label">总时长</div>
+          <div class="value" id="total-duration">--</div>
+      </div>
+  </div>
+
+  <div class="controls">
+      <button id="prev">上一个</button>
+      <button id="start">开始</button>
+      <button id="next">下一个</button>
+      <a href="javascript:history.back()">返回</a>
+  </div>
+</div>
+
+<script>
+function beep() {
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = context.createOscillator();
+    const gainNode = context.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(context.destination);
+    oscillator.type = 'square';
+    oscillator.frequency.value = 800;
+    gainNode.gain.value = 0.2;
+    oscillator.start();
+    setTimeout(() => oscillator.stop(), 150);
+}
+
+const exercises = [
+    { name: "头旋转", duration: 25, img: "./img/1头转动.gif" },
+    { name: "耸肩", duration: 25, img: "./img/2耸肩.gif" },
+    { name: "肩部环绕", duration: 25, img: "./img/3肩部环绕.gif" },
+    { name: "肩部前后转", duration: 25, img: "./img/4肩膀前后转.gif" },
+    { name: "仰天开合", duration: 25, img: "./img/5仰天开合.gif" },
+    { name: "左右抬手", duration: 25, img: "./img/6左右抬手.gif" },
+    { name: "抬头翘手", duration: 25, img: "./img/7抬头翘手.gif" },
+    { name: "外旋夹臂", duration: 25, img: "./img/8外旋夹臂.gif" },
+    { name: "下拉夹背", duration: 25, img: "./img/9下拉夹背.gif" },
+    { name: "上举开合", duration: 25, img: "./img/10上举开合.gif" },
+    { name: "上下夹臂", duration: 25, img: "./img/11上下夹臂.gif" },
+    { name: "摆手", duration: 25, img: "./img/12摆手.gif" },
+    { name: "右腿拉伸", duration: 17, img: "./img/13大腿拉伸.png" },
+    { name: "左腿拉伸", duration: 17, img: "./img/13大腿拉伸.png" },
+    { name: "左小腿拉伸", duration: 17, img: "./img/14小腿拉伸.png" },
+    { name: "右小腿拉伸", duration: 17, img: "./img/14小腿拉伸.png" },
+    { name: "左侧肩后束拉伸", duration: 25, img: "./img/15肩后束拉伸.png" },
+    { name: "右侧肩后束拉伸", duration: 25, img: "./img/15肩后束拉伸.png" },
+    { name: "扩胸运动", duration: 25, img: "./img/18扩胸.png" },
+    { name: "纵横拉伸", duration: 25, img: "./img/17纵横拉伸.gif" },
+    { name: "转体", duration: 25, img: "./img/19转体.png" }
+];
+
+const transitionTime = 1;
+let totalDuration = exercises.reduce((sum, ex) => sum + ex.duration + transitionTime, -transitionTime);
+let remainingTime = totalDuration;
+let index = 0;
+let interval;
+let isRunning = false;
+let timeLeft = 0;
+
+const exerciseName = document.getElementById("exercise");
+const exerciseImage = document.getElementById("exercise-image");
+const timerDisplay = document.getElementById("timer");
+const remainingTimeDisplay = document.getElementById("remaining-time");
+const totalTimeDisplay = document.getElementById("total-duration");
+const startButton = document.getElementById("start");
+const prevButton = document.getElementById("prev");
+const nextButton = document.getElementById("next");
+const nextHint = document.getElementById("next-hint");
+
+function formatTime(sec) {
+    return sec >= 60 ? `${Math.floor(sec/60)}分${sec%60}秒` : `${sec}秒`;
+}
+
+function updateExercise(idx) {
+    const ex = exercises[idx];
+    exerciseName.textContent = ex.name;
+    exerciseImage.src = ex.img || "";
+    timerDisplay.textContent = formatTime(timeLeft || ex.duration);
+    nextHint.textContent = idx < exercises.length-1 ? `下一个：${exercises[idx+1].name}` : "最后一个动作";
+}
+
+function startExercise() {
+    beep();
+    if(timeLeft === 0) timeLeft = exercises[index].duration;
+    timerDisplay.textContent = formatTime(timeLeft);
+    interval = setInterval(() => {
+        timeLeft--;
+        remainingTime--;
+        timerDisplay.textContent = formatTime(timeLeft);
+        remainingTimeDisplay.textContent = formatTime(remainingTime);
+        if(timeLeft <= 0){
+            clearInterval(interval);
+            beep();
+            playNextExercise();
+        }
+    }, 1000);
+}
+
+function playNextExercise(){
+    if(index < exercises.length-1){
+        index++;
+        timeLeft = 0;
+        updateExercise(index);
+        setTimeout(startExercise, transitionTime*1000);
+    } else {
+        timerDisplay.textContent = "训练完成！";
+        beep();
+        setTimeout(resetWorkout, 2000);
+    }
+}
+
+function resetWorkout(){
+    clearInterval(interval);
+    index = 0;
+    remainingTime = totalDuration;
+    isRunning = false;
+    timeLeft = 0;
+    startButton.textContent = "开始";
+    startButton.classList.remove("paused");
+    exerciseName.textContent = "点击开始按钮";
+    exerciseImage.src = "./img/0rest.png";
+    timerDisplay.textContent = "准备就绪";
+    nextHint.textContent = "";
+    remainingTimeDisplay.textContent = formatTime(remainingTime);
+}
+
+function toggleStart(){
+    if(!isRunning){
+        isRunning = true;
+        startButton.textContent = "暂停";
+        startButton.classList.add("paused");
+        updateExercise(index);
+        startExercise();
+    } else {
+        isRunning = false;
+        startButton.textContent = "继续";
+        startButton.classList.remove("paused");
+        clearInterval(interval);
+    }
+}
+
+function nextManual(){
+    if(index < exercises.length-1){
+        clearInterval(interval);
+        index++;
+        timeLeft = 0;
+        updateExercise(index);
+        beep();
+        if(isRunning) startExercise();
+    }
+}
+
+function prevManual(){
+    if(index > 0){
+        clearInterval(interval);
+        index--;
+        timeLeft = 0;
+        updateExercise(index);
+        beep();
+        if(isRunning) startExercise();
+    }
+}
+
+totalTimeDisplay.textContent = formatTime(totalDuration);
+remainingTimeDisplay.textContent = formatTime(remainingTime);
+
+startButton.addEventListener("click", toggleStart);
+nextButton.addEventListener("click", nextManual);
+prevButton.addEventListener("click", prevManual);
+</script>
+</body>
+</html>

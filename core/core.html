@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>core 训练计时器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f5f5, #e3f2fd);
+        }
+        .timer-font {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <div class="flex flex-col h-screen max-w-2xl mx-auto p-4">
+        <!-- 标题 -->
+        <!-- <h1 class="text-2xl font-bold text-center text-slate-800 mb-4">Mid 训练</h1> -->
+
+        <!-- 图片和动作名称 -->
+        <div class="flex flex-col items-center mb-4">
+            <div class="bg-white rounded-lg shadow-md p-3 w-full max-w-md">
+                <img id="exercise-image" src="" alt="运动图片" class="w-full max-h-[500px] object-contain rounded">
+            </div>
+            <h2 id="exercise-name" class="mt-3 text-xl font-bold text-slate-900"></h2>
+            <p id="exercise-details" class="mt-1 text-lg text-slate-600"></p>
+            <p id="rep-counter" class="hidden mt-1 text-base text-slate-500"></p>
+            <p id="next-exercise" class="mt-2 text-sm text-slate-500">下一个: —</p>
+        </div>
+
+        <!-- 当前计时器 -->
+        <div class="text-center mb-4">
+            <span id="current-timer" class="text-5xl font-bold text-blue-600 timer-font">00:00</span>
+        </div>
+
+        <!-- 底部控制栏 -->
+        <div class="bg-white rounded-lg shadow-md p-2">
+            <!-- 时间信息 -->
+            <div class="grid grid-cols-3 gap-3 mb-4 text-center">
+                <div>
+                    <span class="text-xs text-slate-500 ">剩余时长</span>
+                    <span id="remaining-time" class="text-lg font-bold text-slate-700 timer-font">00:00</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-500 ">总时长</span>
+                    <span id="total-time" class="text-lg font-bold text-slate-700 timer-font">00:00</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-500 ">动作进度</span>
+                    <span id="exercise-progress" class="text-lg font-bold text-slate-700 timer-font">1 / 40</span>
+                </div>
+            </div>
+
+            <!-- 控制按钮 -->
+            <div class="flex items-center justify-center gap-3">
+                <button id="prev-btn" class="p-3 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/></svg>
+                </button>
+                <button id="start-pause-btn" class="w-16 h-16 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
+                    <svg id="play-icon" class="w-10 h-10 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
+                    <svg id="pause-icon" class="w-10 h-10 mx-auto hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zM13 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"/></svg>
+                </button>
+                <button id="next-btn" class="p-3 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>
+                </button>
+                <a href="javascript:history.back()" class="p-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const exercises = [
+            { name: "猫式伸展", reps: 8, timePerRep: 9, duration: null, imageName: "a1Cat_Stretch.png", type: "reps" },
+            { name: "跪姿左侧转体", reps: 6, timePerRep: 4.5, duration: null, imageName: "a2Kneeling Left Side Twist.png", type: "reps" },
+            { name: "跪姿右侧转体", reps: 6, timePerRep: 4.5, duration: null, imageName: "a2Kneeling Left Side Twist.png", type: "reps" },
+            { name: "休息", reps: null, timePerRep: null, duration: 4, imageName: "0rest.png", type: "rest" },
+            { name: "臀桥", reps: 10, timePerRep: 5, duration: null, imageName: "a3Glute Bridge.png", type: "reps" },
+            { name: "静态臀桥", reps: null, timePerRep: null, duration: 30, imageName: "a4Static Glute Bridge.png", type: "duration" },
+            { name: "四点支撑", reps: null, timePerRep: null, duration: 30, imageName: "b1Quadruped Hold.png", type: "duration" },
+            { name: "平板支撑", reps: null, timePerRep: null, duration: 30, imageName: "b2Plank.png", type: "duration" },
+            { name: "休息", reps: null, timePerRep: null, duration: 7, imageName: "0rest.png", type: "rest" },
+            { name: "仰卧交替对角伐木", reps: 12, timePerRep: 5, duration: null, imageName: "b3Supine Alternating Diagonal Woodchop.png", type: "reps", loop: 1 },
+            { name: "简易俄罗斯转体", reps: 16, timePerRep: 2, duration: null, imageName: "b4Easy Russian Twist.png", type: "reps", loop: 1 },
+            { name: "仰卧交替伸腿", reps: 12, timePerRep: 2, duration: null, imageName: "b5Supine Alternating Leg Extension.png", type: "reps", loop: 1 },
+            { name: "休息", reps: null, timePerRep: null, duration: 10, imageName: "0rest.png", type: "rest", loop: 1 },
+            { name: "平板支撑交替抬腿", reps: 12, timePerRep: 2.25, duration: null, imageName: "b5z1Plank with Alternating Leg Raise.png", type: "reps", loop: 1 },
+            { name: "休息", reps: null, timePerRep: null, duration: 15, imageName: "0rest.png", type: "rest", loop: 1 },
+            { name: "跪姿左侧后踢腿", reps: 12, timePerRep: 2.5, duration: null, imageName: "b7Kneeling Kickback.png", type: "reps", loop: 1 },
+            { name: "跪姿右侧后踢腿", reps: 12, timePerRep: 2.5, duration: null, imageName: "b7Kneeling Kickback.png", type: "reps", loop: 1 },
+            { name: "休息", reps: null, timePerRep: null, duration: 2, imageName: "0rest.png", type: "rest", loop: 1 },
+            { name: "右侧屈膝侧支撑", reps: null, timePerRep: null, duration: 30, imageName: "b6Side Knee Bent Side Plank.png", type: "duration", loop: 1 },
+            { name: "左侧屈膝侧支撑", reps: null, timePerRep: null, duration: 30, imageName: "b6Side Knee Bent Side Plank.png", type: "duration", loop: 1 },
+            { name: "休息", reps: null, timePerRep: null, duration: 5, imageName: "0rest.png", type: "rest", loop: 1 },
+            { name: "仰卧交替对角伐木", reps: 12, timePerRep: 5, duration: null, imageName: "b3Supine Alternating Diagonal Woodchop.png", type: "reps", loop: 2 },
+            { name: "简易俄罗斯转体", reps: 16, timePerRep: 2, duration: null, imageName: "b4Easy Russian Twist.png", type: "reps", loop: 2 },
+            { name: "仰卧交替伸腿", reps: 12, timePerRep: 2, duration: null, imageName: "b5Supine Alternating Leg Extension.png", type: "reps", loop: 2 },
+            { name: "休息", reps: null, timePerRep: null, duration: 10, imageName: "0rest.png", type: "rest", loop: 2 },
+            { name: "平板支撑交替抬腿", reps: 12, timePerRep: 2.25, duration: null, imageName: "b5z1Plank with Alternating Leg Raise.png", type: "reps", loop: 2 },
+            { name: "休息", reps: null, timePerRep: null, duration: 15, imageName: "0rest.png", type: "rest", loop: 2 },
+            { name: "跪姿左侧后踢腿", reps: 12, timePerRep: 2.5, duration: null, imageName: "b7Kneeling Kickback.png", type: "reps", loop: 2 },
+            { name: "跪姿右侧后踢腿", reps: 12, timePerRep: 2.5, duration: null, imageName: "b7Kneeling Kickback.png", type: "reps", loop: 2 },
+            { name: "休息", reps: null, timePerRep: null, duration: 2, imageName: "0rest.png", type: "rest", loop: 2 },
+            { name: "右侧屈膝侧支撑", reps: null, timePerRep: null, duration: 30, imageName: "b6Side Knee Bent Side Plank.png", type: "duration", loop: 2 },
+            { name: "左侧屈膝侧支撑", reps: null, timePerRep: null, duration: 30, imageName: "b6Side Knee Bent Side Plank.png", type: "duration", loop: 2 },
+            { name: "休息", reps: null, timePerRep: null, duration: 8, imageName: "0rest.png", type: "rest", loop: 2 },
+            { name: "平板支撑", reps: null, timePerRep: null, duration: 30, imageName: "b2Plank.png", type: "duration" },
+            { name: "休息", reps: null, timePerRep: null, duration: 8, imageName: "0rest.png", type: "rest" },
+            { name: "腹部拉伸", reps: null, timePerRep: null, duration: 30, imageName: "c1Abdominal Stretch.png", type: "duration" },
+            { name: "跪姿背部拉伸", reps: null, timePerRep: null, duration: 40, imageName: "c2Kneeling Back Stretch.png", type: "duration" },
+            { name: "站姿左侧拉伸", reps: null, timePerRep: null, duration: 40, imageName: "c3Standing Abdominal Stretch.png", type: "duration" },
+            { name: "站姿右侧拉伸", reps: null, timePerRep: null, duration: 40, imageName: "c3Standing Abdominal Stretch.png", type: "duration" }
+        ];
+        
+        const exerciseImage = document.getElementById('exercise-image');
+        const exerciseName = document.getElementById('exercise-name');
+        const exerciseDetails = document.getElementById('exercise-details');
+        const repCounterEl = document.getElementById('rep-counter');
+        const currentTimerEl = document.getElementById('current-timer');
+        const remainingTimeEl = document.getElementById('remaining-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const exerciseProgressEl = document.getElementById('exercise-progress');
+        const prevBtn = document.getElementById('prev-btn');
+        const startPauseBtn = document.getElementById('start-pause-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+        const nextExerciseEl = document.getElementById('next-exercise');
+        
+        let currentExerciseIndex = 0;
+        let currentExerciseTime = 0;
+        let completedReps = 0;
+        let timerInterval = null;
+        let isPaused = true;
+        let totalDurationSeconds = 0;
+        let remainingDurationSeconds = 0;
+        
+        const startSynth = new Tone.Synth().toDestination();
+        const finishSynth = new Tone.Synth().toDestination();
+        function playStartSound(){ startSynth.triggerAttackRelease("C4", "8n"); }
+        function playFinishSound(){ finishSynth.triggerAttackRelease("C5", "8n"); }
+        function playCountdownSound(){ startSynth.triggerAttackRelease("A3", "16n"); }
+        
+        function calculateTotalDuration() {
+            let total = 0;
+            exercises.forEach(ex=>{
+                if(ex.type==='reps') total += ex.reps*(ex.timePerRep||4.5);
+                else total += ex.duration||0;
+            });
+            return Math.ceil(total);
+        }
+        
+        function formatTime(sec){
+            sec = Math.max(0, sec);
+            const m = Math.floor(sec/60);
+            const s = Math.floor(sec%60);
+            return m>0 ? `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${s}s`;
+        }
+        
+        function updateUI(){
+            const ex = exercises[currentExerciseIndex];
+            exerciseName.textContent = ex.name;
+            exerciseImage.src = `img/${ex.imageName}`;
+            
+            if(ex.type==='reps'){
+                exerciseDetails.textContent = `${ex.reps}次`;
+                repCounterEl.textContent = `已完成: ${completedReps} / 剩余: ${ex.reps-completedReps}`;
+                repCounterEl.classList.remove('hidden');
+            }else{
+                exerciseDetails.textContent = `${ex.duration}s`;
+                repCounterEl.classList.add('hidden');
+            }
+        
+            currentTimerEl.textContent = formatTime(currentExerciseTime);
+            remainingTimeEl.textContent = formatTime(remainingDurationSeconds);
+            totalTimeEl.textContent = formatTime(totalDurationSeconds);
+            exerciseProgressEl.textContent = `${currentExerciseIndex+1} / ${exercises.length}`;
+        
+            if (currentExerciseIndex + 1 < exercises.length) {
+                const nextEx = exercises[currentExerciseIndex + 1];
+                nextExerciseEl.textContent = `下一个: ${nextEx.name}`;
+            } else {
+                nextExerciseEl.textContent = "下一个：完成!";
+            }
+        }
+        
+        function startTimer(){
+            if(!isPaused) return;
+            isPaused = false;
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+            playStartSound();
+        
+            timerInterval = setInterval(()=>{
+                if(currentExerciseTime>0){
+                    currentExerciseTime--;
+                    remainingDurationSeconds--;
+                    if(currentExerciseTime<=3 && currentExerciseTime>0) playCountdownSound();
+                    
+                    const ex = exercises[currentExerciseIndex];
+                    if(ex.type==='reps'){
+                        completedReps = Math.floor((ex.reps*(ex.timePerRep||4.5)-currentExerciseTime)/(ex.timePerRep||4.5));
+                    }
+                    updateUI();
+                } else {
+                    clearInterval(timerInterval);
+                    setTimeout(moveToNextExercise, 2000);
+                }
+            },1000);
+        }
+        
+        function pauseTimer() {
+            isPaused = true;
+            clearInterval(timerInterval);
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        }
+        
+        function moveToNextExercise() {
+            pauseTimer();
+        
+            const currentEx = exercises[currentExerciseIndex];
+            const currentDuration = (currentEx.reps * (currentEx.timePerRep || 4.5)) || currentEx.duration || 0;
+            remainingDurationSeconds -= currentDuration;
+        
+            currentExerciseIndex++;
+            completedReps = 0;
+        
+            if(currentExerciseIndex >= exercises.length){
+                playFinishSound();
+                currentTimerEl.textContent = "完成!";
+                totalTimeEl.textContent = "完成!";
+                remainingTimeEl.textContent = "完成!";
+                startPauseBtn.innerHTML = '<svg class="w-10 h-10 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>';
+                return;
+            }
+        
+            const nextEx = exercises[currentExerciseIndex];
+            currentExerciseTime = (nextEx.reps * (nextEx.timePerRep || 4.5)) || nextEx.duration || 20;
+            updateUI();
+            startTimer();
+        }
+        
+        function moveToPrevExercise(){
+            if(currentExerciseIndex===0) return;
+            pauseTimer();
+        
+            const currentEx = exercises[currentExerciseIndex];
+            const currentDuration = (currentEx.reps * (currentEx.timePerRep || 4.5)) || currentEx.duration || 0;
+            remainingDurationSeconds += currentDuration;
+        
+            currentExerciseIndex--;
+            completedReps = 0;
+        
+            const prevEx = exercises[currentExerciseIndex];
+            currentExerciseTime = (prevEx.reps * (prevEx.timePerRep || 4.5)) || prevEx.duration || 20;
+            remainingDurationSeconds += currentExerciseTime;
+        
+            updateUI();
+            startTimer();
+        }
+        
+        function resetWorkout(){
+            pauseTimer();
+            currentExerciseIndex = 0;
+            completedReps = 0;
+            totalDurationSeconds = calculateTotalDuration();
+            remainingDurationSeconds = totalDurationSeconds;
+            const firstEx = exercises[0];
+            currentExerciseTime = (firstEx.reps * (firstEx.timePerRep || 4.5)) || firstEx.duration || 20;
+            startPauseBtn.innerHTML = '<svg id="play-icon" class="w-10 h-10 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>';
+            updateUI();
+        }
+        
+        startPauseBtn.addEventListener('click', ()=>{
+            if(currentExerciseIndex >= exercises.length){
+                resetWorkout();
+            } else if(isPaused){
+                startTimer();
+            } else {
+                pauseTimer();
+            }
+        });
+        
+        nextBtn.addEventListener('click', moveToNextExercise);
+        prevBtn.addEventListener('click', moveToPrevExercise);
+        
+        window.onload = function(){
+            totalDurationSeconds = calculateTotalDuration();
+            remainingDurationSeconds = totalDurationSeconds;
+            const firstEx = exercises[0];
+            currentExerciseTime = (firstEx.reps * (firstEx.timePerRep || 4.5)) || firstEx.duration || 20;
+            updateUI();
+        };
+    </script>
+</body>
+</html>
