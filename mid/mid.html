@@ -2,8 +2,11 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mid 训练计时器</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.js"></script>
+
 <style>
   * {
       margin: 0;
@@ -19,11 +22,9 @@
   }
 
   .container {
-      max-width: 600px;
+      max-width: 600px !important;
       margin: 0 auto;
-      background: white;
       border-radius: 16px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
       padding: 24px;
   }
 
@@ -43,8 +44,10 @@
   }
 
   #exercise-image {
+    max-width: 100%;
   width: 520px;
-  height: 440px;
+  height: 440px; 
+  max-height: 440px;
   object-fit: contain;
   border-radius: 8px;
   margin: 0 auto 16px;
@@ -76,9 +79,7 @@
   }
 
   .time-info > div {
-      background: #f8f9fa;
       padding: 12px;
-      border-radius: 8px;
   }
 
   .time-info .label {
@@ -99,7 +100,7 @@
       justify-content: center;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
   }
 
   .controls button, .controls a {
@@ -138,18 +139,31 @@
       background: #5a6268;
   }
 
-  .controls a {
-    position: absolute;    
-    right:0;
-      background: #f8f9fa;
-      color: #333;
-  }
+  .back-btn {
+    position: absolute;
+    right: 0;
+    padding: 0 !important;
+    border: none;
+    border-radius: 8px;
+    font-size: 2.5em;
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
 
-  .controls a:hover {
-      background: #e9ecef;
-  }
+}
+
+.back-btn:hover {
+    background: #e9ecef;
+}
 
   @media (max-width: 640px) {
+    #exercise-image {
+        width: 100%;
+        height: 280px;
+        max-height: 280px;
+    }
+
       .container {
           padding: 16px;
       }
@@ -199,11 +213,20 @@
   </div>
 
   <div class="controls">
-      <button id="prev">上一个</button>
-      <button id="start">开始</button>
-      <button id="next">下一个</button>
-      <a href="javascript:history.back()">返回</a>
-  </div>
+    <div style="display: flex; gap: 10px;">
+        <button id="prev">⏮</button>
+        <button id="start">▶</button>
+        <button id="next">⏭</button>
+        
+    </div>
+    <a href="javascript:history.back()"
+    class="back-btn">
+    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/></svg>
+    </a>
+    <!-- <a href="javascript:history.back()" class="back-btn">←</a> -->
+</div>
+
+
 </div>
 
 <script>
@@ -322,13 +345,13 @@ function resetWorkout(){
 function toggleStart(){
     if(!isRunning){
         isRunning = true;
-        startButton.textContent = "暂停";
+        startButton.textContent = "⏸";
         startButton.classList.add("paused");
         updateExercise(index);
         startExercise();
     } else {
         isRunning = false;
-        startButton.textContent = "继续";
+        startButton.textContent = "▶";
         startButton.classList.remove("paused");
         clearInterval(interval);
     }

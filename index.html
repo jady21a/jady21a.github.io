@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>运动计时器</title>
     <style>
         * {
@@ -26,11 +26,6 @@
             max-width: 600px;
             width: 100%;
             text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 48px 32px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
         h1 {
@@ -164,6 +159,15 @@
                 padding: 16px 32px;
             }
         }
+        @media (max-width: 640px) {
+    .motto {
+        font-size: 1.8em !important;
+        margin-bottom: 16px;
+    }
+    h1 {
+        font-size: 1.3em !important;
+    }
+}
     </style>
 </head>
 <body>
