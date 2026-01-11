@@ -3,99 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>core 训练计时器</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Core 训练计时器</title>
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.js"></script>
     <style>
-        body {
-            background: linear-gradient(135deg, #f5f5f5, #e3f2fd);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .timer-font {
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5, #e3f2fd);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .image-section {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .image-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            margin-bottom: 8px;
+            max-width: 350px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #exercise-image {
+            width: 100%;
+            height: 350px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        #exercise-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+
+        #exercise-details {
+            font-size: 1.125rem;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+
+        #rep-counter {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        #rep-counter.hidden {
+            display: none;
+        }
+
+        #next-exercise {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        .timer-section {
+            text-align: center;
+            margin: 0;
+        }
+
+        #current-timer {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2563eb;
             font-variant-numeric: tabular-nums;
         }
-        @media (max-width: 640px) {
-    #exercise-image {
-        height: 250px !important;
 
-    }
-    .bg-white.rounded-lg.shadow-md {
-        min-height: 274px !important;
-    }
-    #current-timer {
-        font-size: 2.5rem !important;
-    }
-    #exercise-name {
-        font-size: 1.25rem !important;
-    }
-    #exercise-details {
-        font-size: 1rem !important;
-    }
+        .control-panel {
+            padding: 16px;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .time-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .time-info > div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .time-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .time-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #334155;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .controls {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+.controls > div {
+    display: flex;
+    gap: 10px;
+}
+
+.controls button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background: #6c757d;
+    color: white;
+}
+
+.controls button:hover {
+    background: #5a6268;
+}
+
+#start {
+    background: #007BFF;
+    color: white;
+    padding: 14px 32px;
+    font-size: 1.2em;
+}
+
+#start:hover {
+    background: #0056b3;
+}
+
+.back-btn {
+    position: absolute;
+    right: 0;
+    padding: 8px;
+    backdrop-filter: blur(10px);
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-btn:hover {
+    background: white;
+}
+
+.back-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+        @media (max-width: 640px) {
+            #exercise-image {
+                height: 300px;
+            }
+
+            #exercise-name {
+                font-size: 1.125rem;
+            }
+
+            #exercise-details {
+                font-size: 1rem;
+            }
+
+            #current-timer {
+                font-size: 2.5rem;
+            }
+
+            .control-panel {
+                padding: 12px;
+            }
+        }
     </style>
 </head>
-<body class="bg-slate-50">
-    <div class="flex flex-col h-screen max-w-2xl mx-auto p-4">
-        <!-- 标题 -->
-        <!-- <h1 class="text-2xl font-bold text-center text-slate-800 mb-4">Mid 训练</h1> -->
-
-        <!-- 图片和动作名称 -->
-        <div class="flex flex-col items-center mb-4">
-            <div class="bg-white rounded-lg shadow-md p-3 w-full max-w-md h-[324px]">
-                <img id="exercise-image" src="" alt="运动图片" class="w-full h-[300px] object-contain rounded">
+<body>
+    <div class="container">
+        <div class="image-section">
+            <div class="image-wrapper">
+                <img id="exercise-image" src="" alt="运动图片">
             </div>
-            <h2 id="exercise-name" class="mt-3 text-xl font-bold text-slate-900"></h2>
-            <p id="exercise-details" class="mt-1 text-lg text-slate-600"></p>
-            <p id="rep-counter" class="hidden mt-1 text-base text-slate-500"></p>
-            <p id="next-exercise" class="mt-2 text-sm text-slate-500">下一个: —</p>
+            <h2 id="exercise-name"></h2>
+            <p id="exercise-details"></p>
+            <p id="rep-counter" class="hidden"></p>
+            <p id="next-exercise">下一个: —</p>
         </div>
 
-        <!-- 当前计时器 -->
-        <div class="text-center mb-4">
-            <span id="current-timer" class="text-5xl font-bold text-blue-600 timer-font">00:00</span>
+        <div class="timer-section">
+            <div id="current-timer">00:00</div>
         </div>
 
-        <!-- 底部控制栏 -->
-        <div class="bg-white rounded-lg shadow-md p-2">
-            <!-- 时间信息 -->
-            <div class="grid grid-cols-3 gap-3 mb-4 text-center">
+        <div class="control-panel">
+            <div class="time-info">
                 <div>
-                    <span class="text-xs text-slate-500 ">剩余时长</span>
-                    <span id="remaining-time" class="text-lg font-bold text-slate-700 timer-font">00:00</span>
+                    <span class="time-label">剩余时长</span>
+                    <span id="remaining-time" class="time-value">00:00</span>
                 </div>
                 <div>
-                    <span class="text-xs text-slate-500 ">总时长</span>
-                    <span id="total-time" class="text-lg font-bold text-slate-700 timer-font">00:00</span>
+                    <span class="time-label">总时长</span>
+                    <span id="total-time" class="time-value">00:00</span>
                 </div>
                 <div>
-                    <span class="text-xs text-slate-500 ">动作进度</span>
-                    <span id="exercise-progress" class="text-lg font-bold text-slate-700 timer-font">1 / 40</span>
+                    <span class="time-label">动作进度</span>
+                    <span id="exercise-progress" class="time-value">1 / 40</span>
                 </div>
             </div>
 
-            <!-- 控制按钮 -->
-            <div class="relative flex items-center justify-center gap-3">
-                <!-- 中间按钮组 -->
-                <button id="prev-btn" class="p-3 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition">
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/></svg>
-                </button>
-              
-                <button id="start-pause-btn" class="w-16 h-16 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
-                  <svg id="play-icon" class="w-10 h-10 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
-                  <svg id="pause-icon" class="w-10 h-10 mx-auto hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zM13 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"/></svg>
-                </button>
-              
-                <button id="next-btn" class="p-3 bg-gray-500 text-white rounded-full hover:bg-gray-600 transition">
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/></svg>
-                </button>
-              
-                <!-- 右侧返回按钮 -->
-                <a href="javascript:history.back()"
-                class="absolute right-0 p-2 bg-white/70 backdrop-blur text-gray-700 rounded-full
-                       hover:bg-white transition">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/></svg>
+            <div class="controls">
+                <div style="display: flex; gap: 10px;">
+                    <button id="prev">⏮</button>
+                    <button id="start">▶</button>
+                    <button id="next">⏭</button>
+                </div>
+                <a href="javascript:history.back()" class="back-btn">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"/>
+                    </svg>
                 </a>
-              </div>
-              
+            </div>
         </div>
     </div>
 
@@ -150,11 +307,10 @@
         const remainingTimeEl = document.getElementById('remaining-time');
         const totalTimeEl = document.getElementById('total-time');
         const exerciseProgressEl = document.getElementById('exercise-progress');
-        const prevBtn = document.getElementById('prev-btn');
-        const startPauseBtn = document.getElementById('start-pause-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const playIcon = document.getElementById('play-icon');
-        const pauseIcon = document.getElementById('pause-icon');
+        const prevBtn = document.getElementById('prev');
+        const startPauseBtn = document.getElementById('start');
+        const nextBtn = document.getElementById('next');
+
         const nextExerciseEl = document.getElementById('next-exercise');
         
         let currentExerciseIndex = 0;
@@ -217,8 +373,7 @@
         function startTimer(){
             if(!isPaused) return;
             isPaused = false;
-            playIcon.classList.add('hidden');
-            pauseIcon.classList.remove('hidden');
+            startPauseBtn.textContent = '⏸';
             playStartSound();
         
             timerInterval = setInterval(()=>{
@@ -242,8 +397,7 @@
         function pauseTimer() {
             isPaused = true;
             clearInterval(timerInterval);
-            playIcon.classList.remove('hidden');
-            pauseIcon.classList.add('hidden');
+            startPauseBtn.textContent = '▶';
         }
         
         function moveToNextExercise() {
@@ -261,7 +415,7 @@
                 currentTimerEl.textContent = "完成!";
                 totalTimeEl.textContent = "完成!";
                 remainingTimeEl.textContent = "完成!";
-                startPauseBtn.innerHTML = '<svg class="w-10 h-10 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>';
+                startPauseBtn.textContent = '▶';
                 return;
             }
         
@@ -298,7 +452,7 @@
             remainingDurationSeconds = totalDurationSeconds;
             const firstEx = exercises[0];
             currentExerciseTime = (firstEx.reps * (firstEx.timePerRep || 4.5)) || firstEx.duration || 20;
-            startPauseBtn.innerHTML = '<svg id="play-icon" class="w-10 h-10 mx-auto" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>';
+            startPauseBtn.textContent = '▶';
             updateUI();
         }
         
@@ -320,7 +474,9 @@
             remainingDurationSeconds = totalDurationSeconds;
             const firstEx = exercises[0];
             currentExerciseTime = (firstEx.reps * (firstEx.timePerRep || 4.5)) || firstEx.duration || 20;
+          
             updateUI();
+            // startPauseBtn.textContent = '▶';
         };
     </script>
 </body>
